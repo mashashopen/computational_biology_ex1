@@ -8,10 +8,26 @@ from matplotlib.animation import FuncAnimation
 from PIL import Image, ImageDraw
 
 
+# Define the probabilities for each state
+P_S1 = 1
+P_S2 = 2/3
+P_S3 = 1/3
+P_S4 = 0
+
+
+
+N = 100
+L = 20
+P = 0.5
+# Define the grid size
+GRID_SIZE = (N, N)
+
+
 class Human:
     def __init__(self, state, believe_rumor):
         self.state = state
         self.believe_rumor = believe_rumor
+        self.L = L
 
     def get_state(self):
         return self.state
@@ -21,22 +37,22 @@ class Human:
 
     def set_believer(self):
         self.believe_rumor = True
+        self.L = L
 
-    def will_pass(self):
+    def is_believer(self):
         return self.believe_rumor
 
+    def is_passing(self):
+        return self.is_believer() and (self.L == 0 or self.L == L)
 
-# Define the probabilities for each state
-P_S1 = 1
-P_S2 = 2/3
-P_S3 = 1/3
-P_S4 = 0
+    def update_gen(self):
+        self.L -= 1
 
-prob = np.array([P_S1, P_S2, P_S3, P_S4])
-prob = prob / prob.sum()
+    def get_L(self):
+        return self.L
 
-# Define the grid size
-GRID_SIZE = (100, 100)
+
+
 
 # Define a function to get the neighbors of a cell
 def get_neighbors(grid, x, y):
@@ -72,93 +88,95 @@ def return_to_previous_state(current_state):
 
 
 # Define a function to update the grid for one iteration
-def update_grid(grid, last_gen_grid, last_cat_grid, L):
+def update_grid(grid):
     new_grid = np.copy(grid)
     for i in range(GRID_SIZE[0]):
         for j in range(GRID_SIZE[1]):
             neighbors = get_neighbors(grid, i, j)
             count_believer_neighbors = 0
-            if new_grid[i][j]:
-                if new_grid[i][j].will_pass():
-                    pass
+            if grid[i][j]:
+                if grid[i][j].is_believer() and not grid[i][j].is_passing():    # already passed the rumor
+                    # in previous generation. should be blocked and continue counting generations
+                    new_grid[i][j].update_gen()
+                    break
 
                 else:
                     for neighbor in neighbors:
-                        if neighbor and neighbor.will_pass():
+                        if neighbor and neighbor.is_passing():
                             count_believer_neighbors += 1
-                            if new_grid[i][j].get_state() == "S1":
+
+                            if grid[i][j].get_state() == "S1":
                                 new_grid[i][j].set_believer()
                                 break
 
-                            if neighbor.get_state() == 'S2' and np.random.random() < P_S2:
+                            if grid[i][j].get_state() == 'S2' and np.random.random() < P_S2:
                                 new_grid[i][j].set_believer()
                                 break
 
-                            if neighbor.get_state() == 'S3' and np.random.random() < P_S3:
+                            if grid[i][j].get_state() == 'S3' and np.random.random() < P_S3:
                                 new_grid[i][j].set_believer()
                                 break
 
                     if count_believer_neighbors >= 2:
                         new_grid[i][j].set_state(upgrade_state(new_grid[i][j].get_state()))
 
-                    if last_cat_grid[i][j] > 0:
-                        new_grid[i][j].set_state(return_to_previous_state(new_grid[i][j].get_state()))
-                    last_cat_grid[i][j] = 0
+                if new_grid[i][j].get_L() <= 0:
+                    new_grid[i][j].set_state(return_to_previous_state(new_grid[i][j].get_state()))
 
-    return new_grid, last_gen_grid, last_cat_grid
+    return new_grid
 
 
 def main():
-    n = 100
 
-    #grid = [[Human(0, None, None) if random.random() > 0.5 else None for _ in range(n)]]*n
-
-    grid = [[0] * n for _ in range(n)]
+    grid = [[0] * GRID_SIZE[0] for _ in range(GRID_SIZE[1])]    # init array to put humans in
 
     # Iterate through the grid and set the value of each cell based on the random value and the threshold
-    for i in range(n):
-        for j in range(n):
+    for i in range(GRID_SIZE[0]):
+        for j in range(GRID_SIZE[1]):
             random.seed(time.time())
             prob_to_human = random.random()
-            if prob_to_human <= 0.5:
-                grid[i][j] = Human(random.choice(['S1', 'S2', 'S3', 'S4']), False)
+            if prob_to_human <= P:
+                grid[i][j] = Human(random.choice(['S1', 'S2', 'S3', 'S4']), False)  # init Human object in each cell
+                # consider each human as non-believer yet
 
             else:
-                grid[i][j] = None
+                grid[i][j] = None   # not a human
 
+    # starter position
 
-    starter_x = random.randint(0, n-1)
-    starter_y = random.randint(0, n-1)
+    starter_x = random.randint(0, N-1)
+    starter_y = random.randint(0, N-1)
     try:
         while not grid[starter_x][starter_y]:
-            starter_x = random.randint(0, n)
-            starter_y = random.randint(0, n)
+            starter_x = random.randint(0, N-1)
+            starter_y = random.randint(0, N-1)
     except:
         print(starter_x, starter_y)
 
-    grid[starter_x][starter_y].set_believer()
+    first_spreader = grid[starter_x][starter_y]
+    first_spreader.set_believer()
 
     print("the starter is: ", starter_x, starter_y)
 
-
-
-
     # Define a dictionary that maps each state to a color
-    state_colors = {True: 'purple', False: 'green'}
-
+    state_colors = {
+        (True, 'S1'): 'purple',
+        (True, 'S2'): 'purple',
+        (True, 'S3'): 'purple',
+        (True, 'S4'): 'purple',
+        (False, 'S1'): 'green',
+        (False, 'S2'): 'white',
+        (False, 'S3'): 'pink',
+        (False, 'S4'): 'red'
+    }
     # Create a colormap from the state colors dictionary
-    cmap = ListedColormap([state_colors[state] for state in [True, False]])
+    cmap = ListedColormap(list(set(state_colors.values())))
 
-    passed_rumor_generations = {}
-    L = 10
     # Run the simulation for a certain number of iterations
     NUM_ITERATIONS = 100
-    last_gen_grid = np.zeros(GRID_SIZE, dtype=int)
-    last_cat_grid = np.zeros(GRID_SIZE, dtype=int)
+
     frames = []
     for i in range(NUM_ITERATIONS):
-        # Update the grid
-        grid, last_gen_grid, last_cat_grid = update_grid(grid, last_gen_grid, last_cat_grid, L)
 
         # Create an image of the grid using the state colors and add it to the frames list
         image = Image.new('RGB', GRID_SIZE)
@@ -166,15 +184,14 @@ def main():
         for x in range(GRID_SIZE[0]):
             for y in range(GRID_SIZE[1]):
                 if grid[x][y]:
-                    #print(x, y, state_colors[grid[x][y].get_state()], grid[x][y].get_state())
-                    draw.rectangle((x, y, x, y), fill=state_colors[grid[x][y].will_pass()])
-                    #image.show()
-
+                    draw.rectangle((x, y, x, y), fill=state_colors[(grid[x][y].is_believer(), grid[x][y].get_state())])
         frames.append(np.array(image))
+        # Update the grid
+        grid = update_grid(grid)
 
         # Create an animation from the frames and display it
     fig = plt.figure(figsize=(8, 8))
-    animation = FuncAnimation(fig, lambda i: plt.imshow(frames[i], cmap=cmap), frames=len(frames), interval=100)
+    animation = FuncAnimation(fig, lambda i: plt.imshow(frames[i], cmap=cmap), frames=len(frames), interval=1000)
     plt.show()
 
 
