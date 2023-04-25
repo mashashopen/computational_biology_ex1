@@ -16,7 +16,7 @@ P_S4 = 0
 
 
 NUM_GENERATIONS = 50
-N = 10
+N = 100
 L = 4
 P = 0.5
 # Define the grid size
@@ -251,7 +251,6 @@ def run_and_animate_generations(grid, state_colors):
                     # if we want to see who received the rumor, change to grid[i][j].is_receiver()
         frames.append(np.array(image))
         # Update the grid
-        print(get_states(grid))
         grid = update_generation(grid, generation)
 
     return frames
@@ -265,21 +264,7 @@ def get_states(grid):
     return states_in_2d
 
 
-def init_grid_so_the_rumor_will_spread_slower():
-    grid = [[0] * GRID_SIZE[0] for _ in range(GRID_SIZE[1])]
-    random.seed(0)  # seed(0) if we want to set permanent state
-
-    # Iterate through the grid and set the value of each cell based on the random value and the threshold
-    for i in range(GRID_SIZE[0]):
-        for j in range(GRID_SIZE[1]):
-            prob_to_human = random.random()
-            if prob_to_human <= P:
-                grid[i][j] = Human(random.choice(['S1', 'S2', 'S3', 'S4']))  # init Human object in each cell
-                # consider each human as non-believer yet
-                # each state is chosen randomly
-            else:
-                grid[i][j] = None  # not a human
-
+def wrap_s1_with_s4(grid):
     for i in range(GRID_SIZE[0]):
         for j in range(GRID_SIZE[1]):
             if grid[i][j]:
@@ -290,15 +275,93 @@ def init_grid_so_the_rumor_will_spread_slower():
                         col = neighbor[1]
                         grid[row][col].set_state("S4")
 
+    return grid
+
+
+def init_grid_with_more_s3_s4():
+    # The weights represent the probabilities of each value being chosen
+    # In this case, "s3" and "s4" have twice the probability of "s1" and "s2"
+    values = ["S1", "S2", "S3", "S4"]
+    weights = [1, 1, 2, 2]
+
+    grid = [[0] * GRID_SIZE[0] for _ in range(GRID_SIZE[1])]
+    random.seed(time.time())  # seed(0) if we want to set permanent state
+
+    # Iterate through the grid and set the value of each cell based on the random value and the threshold
+    for i in range(GRID_SIZE[0]):
+        for j in range(GRID_SIZE[1]):
+            prob_to_human = random.random()
+            if prob_to_human <= P:
+                grid[i][j] = Human(random.choices(values, weights)[0])  # init Human object in each cell
+                # consider each human as non-believer yet
+                # each state is chosen randomly
+            else:
+                grid[i][j] = None  # not a human
+
     set_starter(grid)
 
     return grid
 
 
-def main():
-    #grid = init_grid()
-    grid = init_grid_so_the_rumor_will_spread_slower()
+def init_grid_with_s1_far_from_humans():
 
+    grid = [[0] * GRID_SIZE[0] for _ in range(GRID_SIZE[1])]
+    random.seed(time.time())  # seed(0) if we want to set permanent state
+
+    # Iterate through the grid and set the value of each cell based on the random value and the threshold
+    for i in range(GRID_SIZE[0]):
+        for j in range(GRID_SIZE[1]):
+            prob_to_human = random.random()
+            if prob_to_human <= P:
+                grid[i][j] = Human("S1")  # init Human object in each cell
+                # consider each human as non-believer yet
+                # set each one to s1 as default, will be changed soon.
+            else:
+                grid[i][j] = None  # not a human
+
+    for i in range(GRID_SIZE[0]):
+        for j in range(GRID_SIZE[1]):
+            if grid[i][j]:
+                neighbors = get_neighbors(grid, i, j)
+                if len(neighbors) >= 2:
+                    # S1 cells will have only one neighbor
+                    grid[i][j].set_state(random.choice(["S2", "S3", "S4"]))
+
+    set_starter(grid)
+
+    return grid
+
+
+def get_input():
+    while (1):
+        choice = input("Choose what population do you want to simulate a rumor spreading in:\n"
+                       "1. a random population without special conditions\n"
+                       "2. a population where every person with S1 state is wrapped with persons with S4 state\n"
+                       "3. a population where most of the people are not easy believers (are with S3 and S4 state\n"
+                       "4. a population where people with S1 state are isolated from the other people\n")
+        try:
+            choice = int(choice)
+            if 1 <= choice <= 4:
+                return choice
+            else:
+                print("invalid input, try again\n")
+                continue
+        except:
+            print("invalid input, try again\n")
+
+
+def main():
+
+    choice = get_input()
+    if choice == 1:
+        grid = init_grid()
+    if choice == 2:
+        grid = init_grid()
+        grid = wrap_s1_with_s4(grid)
+    if choice == 3:
+        grid = init_grid_with_more_s3_s4()
+    if choice == 4:
+        grid = init_grid_with_s1_far_from_humans()
 
     # Define a dictionary that maps each state to a color
     state_colors = {
