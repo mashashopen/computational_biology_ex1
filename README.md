@@ -1,10 +1,10 @@
 # computational_biology_ex1
 
-this program is an implementation of a rumor spreading model. A population of people is represented as a grid of size 100 * 100, with parameters as:
-P- population density
-P_Si- probability of a person with level of skepticism Si to beleive the rumor
-L- number of generations that a person have to wait since spreading the rumor until next time he can pass it again to the neighbors
-NUM_GENERATIONS- number of generations the model will run
+this program is an implementation of a rumor spreading model. A population of people is represented as a grid of size 100 * 100, with parameters as:  
+P- population density.  
+P_Si- probability of a person with level of skepticism Si to beleive the rumor.  
+L- number of generations that a person have to wait since spreading the rumor until next time he can pass it again to the neighbors.  
+NUM_GENERATIONS- number of generations the model will run.  
 
 
 ################### How to run ###################\n
