@@ -7,7 +7,7 @@ L- number of generations that a person have to wait since spreading the rumor un
 NUM_GENERATIONS- number of generations the model will run
 
 
-################### How to run ###################
+################### How to run ###################\n
 in order to run this program, please run first:
 pip install -r requirements.txt
 
