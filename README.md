@@ -7,13 +7,13 @@ L- number of generations that a person have to wait since spreading the rumor un
 NUM_GENERATIONS- number of generations the model will run.  
 
 
-################### How to run ###################\n
-in order to run this program, please run first:
-pip install -r requirements.txt
+################### How to run ###################   
+in order to run this program, please run first:  
+pip install -r requirements.txt  
 
-then, run:
-rumor_spreading_model.py
+then, run:  
+rumor_spreading_model.py   
 
-a menu will be displayed. you can choose to run the simulation with a random grid, or with an initial grid with special conditions.
-then, you can choose to view the animation of the rumor spreading (where the color purple represents the people who spreaded the rumor),
-or you can choose to display the plots of the data.
+a menu will be displayed. you can choose to run the simulation with a random grid, or with an initial grid with special conditions.   
+then, you can choose to view the animation of the rumor spreading (where the color purple represents the people who spreaded the rumor),   
+or you can choose to display the plots of the data.   
