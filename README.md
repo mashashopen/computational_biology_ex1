@@ -6,6 +6,12 @@ P_Si- probability of a person with level of skepticism Si to beleive the rumor.
 L- number of generations that a person have to wait since spreading the rumor until next time he can pass it again to the neighbors.  
 NUM_GENERATIONS- number of generations the model will run.  
 
+one person is chosen randomly to start the rumor. then, the person spreads the rumor to all the neighbors (3 to 8 neighbors, depends on the location on the grid). each neighbor is now a receiver of the rumor, but each will be a spreader only after a calculation of probabilty (i.e person with level of skepticism S2 will spread the rumor with a probabilty of 2/3). We assume that if the person spreads the rumor, he is also a believer (except for the starter who is not necessarily a believer).  
+
+for each person in the grid we check if he is a spreader and if so, we are doing for him the described above.  
+one iterations on the whole grid, counts as one generation.  
+we continue with the iteration and we can plot the data to see the rate of the rumor spreading, or to vizualize the spreading itself using animation.  
+
 
 ################### How to run ###################   
 in order to run this program, please run first:  
