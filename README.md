@@ -19,6 +19,7 @@ pip install -r requirements.txt
 
 then, run:  
 rumor_spreading_model.py   
+##################################################  
 
 a menu will be displayed. you can choose to run the simulation with a random grid, or with an initial grid with special conditions.   
 then, you can choose to view the animation of the rumor spreading (where the color purple represents the people who spreaded the rumor),   
