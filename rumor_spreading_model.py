@@ -397,19 +397,30 @@ def reset_globals():
 
 
 def get_input():
-    customize = input("Do you want to customize parameter values? (Y) ")
+    while(1):
+        customize = input("Do you want to customize parameter values? (y/n) ")
+        if customize.lower() not in ['n', 'y']:
+            print("Invalid input, please try again.")
+            continue
+        else:
+            break
+
     # If user chooses to customize parameter values, prompt for input
     if customize.lower() == "y":
         reset_globals()
         # Prompt the user for input and execute the corresponding function
-    try:
+
+    while(1):
         model_choice = input("Choose what population do you want to simulate a rumor spreading in:\n"
                        "1. a random population without special conditions\n"
                        "2. a population where every person with S1 state is wrapped with persons with S4 state\n"
                        "3. a population where most of the people are not easy believers (are with S3 and S4 state)\n"
                        "4. a population where people with S1 state are isolated from the other people\n")
+
         if model_choice not in ['1', '2', '3', '4']:
             print("Invalid choice, please try again.")
+            continue
+
         else:
             if model_choice == '1':
                 grid = init_grid()
@@ -423,8 +434,8 @@ def get_input():
 
             if model_choice == '4':
                 grid = init_grid_with_s1_far_from_humans()
-    except:
-        print("invalid input, try again\n")
+
+            break
 
     return grid
 
@@ -442,10 +453,13 @@ def main():
     }
 
     # Ask user if they want to showing animation or creating plots
-    choice = input("for showing the animation choose A OR for creating plots choose P (A/P) ")
-    if choice.lower() not in ['p', 'a']:
-        print("Invalid input, please try again.")
-        exit()
+    while(1):
+        choice = input("for showing the animation choose A OR for creating plots choose P (A/P) ")
+        if choice.lower() not in ['p', 'a']:
+            print("Invalid input, please try again.")
+            continue
+        else:
+            break
 
     if (choice.lower() == "a"):
         grid = get_input()
