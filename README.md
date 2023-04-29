@@ -15,7 +15,7 @@ We continue with the iterations and we can plot the data to see the rate of the 
 Note, that the plots are calculating number of people who *recieved* the rumor whereas the animation colors the people who *spreaded* the rumor (a.k.a, believers).  
 
 
-################### How to run ###################   
+################### How to run #####################   
 The executable file can be found here: https://drive.google.com/drive/u/0/folders/128sB7iPpJALXjwNSs87UKYVNx0ccdwgG  
 
 Please make sure to wait for the first output (a question for the user) before inserting any input).  
