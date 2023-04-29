@@ -1,13 +1,13 @@
-#!/usr/bin/env python
 import random
 import time
+import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.animation import FuncAnimation
 from PIL import Image, ImageDraw
-
+from numpy import double
 
 # Define the probabilities for each state
 P_S1 = 1
@@ -15,13 +15,14 @@ P_S2 = 2/3
 P_S3 = 1/3
 P_S4 = 0
 
-
-NUM_GENERATIONS = 50
+NUM_GENERATIONS = 100
 N = 100
-L = 4
+L = 10
 P = 0.5
+starters_num = 1
 # Define the grid size
 GRID_SIZE = (N, N)
+human_recived = []
 
 
 class Human:
@@ -175,8 +176,6 @@ def spread_rumor(prev_gen_grid, next_gen_grid, i, j, num_of_gen):
     # now we need to update the next generation where he can spread again.
 
 
-
-
 def deep_copy_of_grid(grid):
     copied_grid = [[None] * GRID_SIZE[0] for _ in range(GRID_SIZE[1])]
     for i in range(N):
@@ -232,29 +231,47 @@ def init_grid():
             else:
                 grid[i][j] = None  # not a human
 
-    set_starter(grid)
+    for i in range(starters_num):
+        set_starter(grid)
 
     return grid
 
 
 def run_and_animate_generations(grid, state_colors):
     frames = []
+    rumur_heared_array = []
+    population_counter = 0
+
     for generation in range(NUM_GENERATIONS):
 
         # Create an image of the grid using the state colors and add it to the frames list
         image = Image.new('RGB', GRID_SIZE)
         draw = ImageDraw.Draw(image)
+        rumur_heared = 0
         for i in range(GRID_SIZE[0]):
             for j in range(GRID_SIZE[1]):
                 if grid[i][j]:
                     draw.rectangle((j, i, j, i), fill=state_colors[(grid[i][j].is_spreader(), grid[i][j].get_state())])
                     # color cell with spreader Humans (believers).
                     # if we want to see who received the rumor, change to grid[i][j].is_receiver()
+                if (type(grid[i][j]) is Human):
+                    if (grid[i][j].is_receiver()):
+                        rumur_heared += 1
+
+        rumur_heared_array.append(rumur_heared)
         frames.append(np.array(image))
         # Update the grid
+        print(get_states(grid))
         grid = update_generation(grid, generation)
 
-    return frames
+    for i in range(GRID_SIZE[0]):
+        for j in range(GRID_SIZE[1]):
+            if (type(grid[i][j]) is Human):
+                population_counter += 1
+
+    population_rate = rumur_heared_array[NUM_GENERATIONS-1] / population_counter
+
+    return frames, population_rate, rumur_heared_array, population_counter
 
 
 def get_states(grid):
@@ -263,6 +280,36 @@ def get_states(grid):
         for j in range(GRID_SIZE[1]):
             states_in_2d[i][j] = grid[i][j].get_state() if grid[i][j] else 0
     return states_in_2d
+
+
+def plot_maker(x_axes, y_axes, color, label_x_axes, label_y_axes, plot_label):
+    # Create the plot
+    fig, ax = plt.subplots()
+    ax.plot(x_axes, y_axes, color)
+    ax.set_xlabel(label_x_axes)
+    ax.set_ylabel(label_y_axes)
+    #plt.savefig(plot_label)
+    ax.set_title(plot_label)
+    plt.show()
+    plt.close()
+
+def create_plot(grid, state_colors):
+    main_array_10 = []
+    for i in range(10):
+        frames, population_rate, rumur_heared_array, population_counter = run_and_animate_generations(grid, state_colors)
+        main_array_10.append(rumur_heared_array)
+
+    # Average the values in the rumur_heared_arrays list
+    avg_rumur_heared_array = np.mean(main_array_10, axis=0)
+
+    avg_rumur_population_array = [member / population_counter for member in avg_rumur_heared_array]
+
+
+    # create a plot of the population who heared the rumur during all generations
+    plot_maker(range(0, NUM_GENERATIONS), avg_rumur_population_array, 'purple', 'number of generations',
+               'rumur population rate', 'plot according user choice.png')
+
+
 
 
 def wrap_s1_with_s4(grid):
@@ -333,38 +380,67 @@ def init_grid_with_s1_far_from_humans():
     return grid
 
 
+def reset_globals():
+    global P, L, NUM_GENERATIONS, P_S1, P_S2, P_S3, P_S4, starters_num
+    try:
+        P = double(input(f"Enter the value for P (default {P}): ") or P)
+        L = int(input(f"Enter the value for L (default {L}): ") or L)
+        NUM_GENERATIONS = int(input(f"Enter the value for NUM_GENERATIONS (default {NUM_GENERATIONS}): ") or NUM_GENERATIONS)
+        P_S1 = double(input(f"Enter the value for P_S1 (default {P_S1}): ") or P_S1)
+        P_S2 = double(input(f"Enter the value for P_S2 (default {P_S2}): ") or P_S2)
+        P_S3 = double(input(f"Enter the value for P_S3 (default {P_S3}): ") or P_S3)
+        P_S4 = double(input(f"Enter the value for P_S4 (default {P_S4}): ") or P_S4)
+        starters_num = int(input(f"Enter the value for number of starters peaple (default {starters_num}): ") or starters_num)
+    except ValueError:
+        print("Invalid input. Please enter an integer value.")
+        reset_globals()
+
+
 def get_input():
-    while (1):
-        choice = input("Choose what population do you want to simulate a rumor spreading in:\n"
+    while(1):
+        customize = input("Do you want to customize parameter values? (y/n) ")
+        if customize.lower() not in ['n', 'y']:
+            print("Invalid input, please try again.")
+            continue
+        else:
+            break
+
+    # If user chooses to customize parameter values, prompt for input
+    if customize.lower() == "y":
+        reset_globals()
+        # Prompt the user for input and execute the corresponding function
+
+    while(1):
+        model_choice = input("Choose what population do you want to simulate a rumor spreading in:\n"
                        "1. a random population without special conditions\n"
                        "2. a population where every person with S1 state is wrapped with persons with S4 state\n"
-                       "3. a population where most of the people are not easy believers (are with S3 and S4 state\n"
+                       "3. a population where most of the people are not easy believers (are with S3 and S4 state)\n"
                        "4. a population where people with S1 state are isolated from the other people\n")
-        try:
-            choice = int(choice)
-            if 1 <= choice <= 4:
-                return choice
-            else:
-                print("invalid input, try again\n")
-                continue
-        except:
-            print("invalid input, try again\n")
+
+        if model_choice not in ['1', '2', '3', '4']:
+            print("Invalid choice, please try again.")
+            continue
+
+        else:
+            if model_choice == '1':
+                grid = init_grid()
+
+            if model_choice == '2':
+                grid = init_grid()
+                wrap_s1_with_s4(grid)
+
+            if model_choice == '3':
+                grid = init_grid_with_more_s3_s4()
+
+            if model_choice == '4':
+                grid = init_grid_with_s1_far_from_humans()
+
+            break
+
+    return grid
 
 
 def main():
-
-    choice = get_input()
-    if choice == 1:
-        grid = init_grid()
-    if choice == 2:
-        grid = init_grid()
-        grid = wrap_s1_with_s4(grid)
-    if choice == 3:
-        grid = init_grid_with_more_s3_s4()
-    if choice == 4:
-        grid = init_grid_with_s1_far_from_humans()
-
-    # Define a dictionary that maps each state to a color
     state_colors = {
         (True, 'S1'): 'purple',
         (True, 'S2'): 'purple',
@@ -375,15 +451,39 @@ def main():
         (False, 'S3'): 'pink',
         (False, 'S4'): 'red'
     }
-    # Create a colormap from the state colors dictionary
-    cmap = ListedColormap(list(set(state_colors.values())))
 
-    frames = run_and_animate_generations(grid, state_colors)
+    # Ask user if they want to showing animation or creating plots
+    while(1):
+        choice = input("for showing the animation choose A OR for creating plots choose P (A/P) ")
+        if choice.lower() not in ['p', 'a']:
+            print("Invalid input, please try again.")
+            continue
+        else:
+            break
 
-    # Create an animation from the frames and display it
-    fig = plt.figure(figsize=(8, 8))
-    animation = FuncAnimation(fig, lambda i: plt.imshow(frames[i], cmap=cmap), frames=len(frames), interval=1000)
-    plt.show()
+    if (choice.lower() == "a"):
+        grid = get_input()
+
+        population_rate_array = []
+
+        # Create a colormap from the state colors dictionary
+        cmap = ListedColormap(list(set(state_colors.values())))
+
+        frames, population_rate, rumur_heared_array, population_counter = run_and_animate_generations(grid,
+                                                                                                      state_colors)
+        population_rate_array.append(population_rate)
+
+        # Create an animation from the frames and display it
+        fig = plt.figure(figsize=(8, 8))
+        animation = FuncAnimation(fig, lambda i: plt.imshow(frames[i], cmap=cmap), frames=len(frames),
+                                  interval=10, repeat=False)
+        plt.show()
+
+    # If user chooses to customize parameter values, prompt for input
+    if (choice.lower() == "p"):
+        grid = get_input()
+
+        create_plot(grid, state_colors)
 
 
 if __name__ == "__main__":
