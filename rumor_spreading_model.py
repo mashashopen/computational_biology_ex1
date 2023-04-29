@@ -1,7 +1,5 @@
 import random
 import time
-import argparse
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -22,7 +20,6 @@ P = 0.5
 starters_num = 1
 # Define the grid size
 GRID_SIZE = (N, N)
-human_recived = []
 
 
 class Human:
@@ -261,7 +258,6 @@ def run_and_animate_generations(grid, state_colors):
         rumur_heared_array.append(rumur_heared)
         frames.append(np.array(image))
         # Update the grid
-        print(get_states(grid))
         grid = update_generation(grid, generation)
 
     for i in range(GRID_SIZE[0]):
@@ -293,6 +289,7 @@ def plot_maker(x_axes, y_axes, color, label_x_axes, label_y_axes, plot_label):
     plt.show()
     plt.close()
 
+
 def create_plot(grid, state_colors):
     main_array_10 = []
     for i in range(10):
@@ -308,8 +305,6 @@ def create_plot(grid, state_colors):
     # create a plot of the population who heared the rumur during all generations
     plot_maker(range(0, NUM_GENERATIONS), avg_rumur_population_array, 'purple', 'number of generations',
                'rumur population rate', 'plot according user choice.png')
-
-
 
 
 def wrap_s1_with_s4(grid):
@@ -427,7 +422,7 @@ def get_input():
 
             if model_choice == '2':
                 grid = init_grid()
-                wrap_s1_with_s4(grid)
+                grid = wrap_s1_with_s4(grid)
 
             if model_choice == '3':
                 grid = init_grid_with_more_s3_s4()
@@ -476,11 +471,11 @@ def main():
         # Create an animation from the frames and display it
         fig = plt.figure(figsize=(8, 8))
         animation = FuncAnimation(fig, lambda i: plt.imshow(frames[i], cmap=cmap), frames=len(frames),
-                                  interval=10, repeat=False)
+                                  interval=100, repeat=False)
         plt.show()
 
     # If user chooses to customize parameter values, prompt for input
-    if (choice.lower() == "p"):
+    if choice.lower() == "p":
         grid = get_input()
 
         create_plot(grid, state_colors)
@@ -488,5 +483,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
