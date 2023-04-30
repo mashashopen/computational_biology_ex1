@@ -16,7 +16,10 @@ Note, that the plots are calculating number of people who *recieved* the rumor w
 
 
 ################### How to run #####################   
+The executable file will run on windows
 The executable file can be found here: https://drive.google.com/drive/u/0/folders/128sB7iPpJALXjwNSs87UKYVNx0ccdwgG  
+
+and the running command will be: .\rumor_spreading_model.exe
 
 Please make sure to wait for the first output (a question for the user) before inserting any input).  
 ##################################################  
